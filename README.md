@@ -10,6 +10,9 @@ We define the estimate via solution of unconstrained convex optimization problem
 
 The method uses cross-validation to automatically select two regularization parameters. The detailed description of the method is available on arXiv: https://arxiv.org/abs/2001.11548
 
+![tekst alternatywny](results.png)
+
+
 ## Files structure
 * The file **Working_Examples.m** contains a few working examples explaining how spinner code can be used in practice. This file should be treated as a starting point.
 * **spinnerCV.m** - the implementation of the main method. This function performes the cross-validation to find the optimal tuning parameters and returns the corresponding spinner estimate. Different options are possible as shown in "Examples.m".
