@@ -11,7 +11,10 @@ We define the estimate via solution of unconstrained convex optimization problem
 The detailed description of the method is available on arXiv: https://arxiv.org/abs/2001.11548
 
 ## Files structure
-
+* The file **Working_Examples.m** contains a few working examples explaining how spinner code can be used in practice. This file should be treated as a starting point.
+* **spinnerCV.m** - the implementation of the main method. This function performes the cross-validation to find the optimal tuning parameters and returns the corresponding spinner estimate. Different options are possible as shown in "Examples.m".
+* **spinner.m** - this function solves the spinner optimization problem for user-defined pair of tuning parameters.
+* **spinnerHeatmap.m** - this creates the heatmap of given matrix, such as zeros of the matrix are indicated in the heatmap by white color.
 
 ## License
 The SpINNEr toolbox is free software: you can redistribute it and/or 
