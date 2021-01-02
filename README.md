@@ -1,5 +1,5 @@
-# SpINNEr
-**fff**
+#**Sp**arsity **I**nducing **N**uclear-**N**orm **E**stimato**r** (SpINNEr)
+
 
 
 The SpINNEr toolbox is free software: you can redistribute it and/or 
