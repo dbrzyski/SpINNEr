@@ -1,4 +1,4 @@
-#**Sp**arsity **I**nducing **N**uclear-**N**orm **E**stimato**r** (SpINNEr)
+# **Sp**arsity **I**nducing **N**uclear-**N**orm **E**stimato**r** (SpINNEr)
 
 
 
