@@ -7,8 +7,7 @@ SpINNEr was designed to deal with the estimation of the coefficients matrix unde
 We define the estimate via solution of unconstrained convex optimization problem. Two various penalty terms are added to the objective function:
 * **L1 norm** imposed on the vectorized matrix to introduce entry-wise sparsity
 * **Nuclear norm** which yields low-rank solution revealing the hidden structure
-
-https://arxiv.org/abs/2001.11548
+The detailed description of the method is available on arXiv: https://arxiv.org/abs/2001.11548
 
 ## Files structure
 
