@@ -1,7 +1,7 @@
 # **Sp**arsity **I**nducing **N**uclear-**N**orm **E**stimato**r** (SpINNEr)
 
 
-argmin_{B, beta} {   0.5*sum_i ( y_i - X*beta - <A_i, B> )^2 + lambda_N*|| B ||_* + lambda_L*|| vec(B o W) ||_1    }
+#argmin_{B, beta} {   0.5*sum_i ( y_i - X*beta - <A_i, B> )^2 + lambda_N*|| B ||_* + lambda_L*|| vec(B o W) ||_1    }#
 
 The SpINNEr toolbox is free software: you can redistribute it and/or 
 modify it under the terms of the GNU General Public License as published 
