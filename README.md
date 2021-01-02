@@ -8,7 +8,7 @@ We define the estimate via solution of unconstrained convex optimization problem
 * **L1 norm** imposed on the vectorized matrix to introduce entry-wise sparsity
 * **Nuclear norm** which yields low-rank solution revealing the hidden structure
 
-The detailed description of the method is available on arXiv: https://arxiv.org/abs/2001.11548
+The method uses cross-validation to automatically select two regularization parameters. The detailed description of the method is available on arXiv: https://arxiv.org/abs/2001.11548
 
 ## Files structure
 * The file **Working_Examples.m** contains a few working examples explaining how spinner code can be used in practice. This file should be treated as a starting point.
