@@ -1,7 +1,7 @@
 # **Sp**arsity **I**nducing **N**uclear-**N**orm **E**stimato**r** (SpINNEr)
 
 ## The problem which the software addresses
-SpINNEr was designed to deal with the estimation of the coefficients matrix under matrix-variate regression model with scalar response. The method works under the assumption that the true solution is well approximable by sparse and low-rank matrix. The immediate application is finding brain connectivities that are associated with a clinical outcome or phenotype.  The proposed framework regresses a (scalar) clinical outcome on matrix-variate predictors which arise in the form of brain connectivity matrices. SpINNEr can discover the structure of the brain network by identyfing the clusters of brain regions associated with the respone.  
+SpINNEr was designed to deal with the estimation of the coefficients matrix under matrix-variate regression model with scalar response. The method works under the assumption that the true solution is well approximable by sparse and low-rank matrix. The immediate application is finding brain connectivities that are associated with a clinical outcome or phenotype.  The proposed framework regresses a (scalar) clinical outcome on matrix-variate predictors which arise in the form of brain connectivity matrices. SpINNEr can discover the structure of the brain network by identifying the clusters of brain regions associated with the response.  
 ![](results.png)
 
 ## The method
