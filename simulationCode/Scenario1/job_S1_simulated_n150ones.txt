@@ -1,0 +1,19 @@
+#!/bin/bash 
+
+#SBATCH -J S1_simulated_n150ones
+#SBATCH -p general
+#SBATCH -o S1_%j.txt
+#SBATCH -e S1_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=harezlak@iu.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+#SBATCH --time=08:00:00
+#SBATCH --mem=16G
+
+
+module load matlab 
+
+cd /path/to/your/S1_simulated_n150ones.m
+ 
+matlab < S1_simulated_n150ones.m

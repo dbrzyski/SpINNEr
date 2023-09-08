@@ -1,0 +1,19 @@
+#!/bin/bash 
+
+#SBATCH -J S3_realAA_ones_46
+#SBATCH -p general
+#SBATCH -o S3_46_%j.txt
+#SBATCH -e S3_46_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=harezlak@iu.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+#SBATCH --time=08:00:00
+#SBATCH --mem=16G
+
+
+module load matlab 
+
+cd /path/to/your/S3_realAA_ones_46.m
+ 
+matlab < S3_realAA_ones_46.m

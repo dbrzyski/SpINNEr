@@ -1,0 +1,19 @@
+#!/bin/bash 
+
+#SBATCH -J S2_simulated_varyn
+#SBATCH -p general
+#SBATCH -o S2_%j.txt
+#SBATCH -e S2_%j.err
+#SBATCH --mail-type=ALL
+#SBATCH --mail-user=harezlak@iu.edu
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=16
+#SBATCH --time=08:00:00
+#SBATCH --mem=16G
+
+
+module load matlab 
+
+cd /path/to/your/S2_simulated_varyn.m
+ 
+matlab < S2_simulated_varyn.m
