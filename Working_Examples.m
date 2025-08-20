@@ -6,9 +6,9 @@ addpath('D:\Dropbox\NuclearNorm\NuclearLasso\spinnerCode')
 %% Settings
 p        = 40;
 n        = 100;
-sigStr   = 2;
+sigStr   = 3;
 
-%% Data
+%% Datas
 % true signal 
 rng(1)
 B1      = sigStr*ones(5,5);
