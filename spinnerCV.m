@@ -333,5 +333,10 @@ out.B            = outFinal.B;
 out.beta         = outFinal.beta;
 out.bestLambdaN  = bestLambdaN;
 out.bestLambdaL  = bestLambdaL;
+out.GroupsIdxs   = GroupsIdxs;
+out.optVal       = outFinal.optVal;
+out.optVal_lamNucl  = outFinal.optVal_lamNucl;
+out.optVal_loglik   = outFinal.optVal_loglik;
+out.optVal_lamLasso = outFinal.optVal_lamLasso;
 
 end

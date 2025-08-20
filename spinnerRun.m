@@ -1,4 +1,4 @@
-function out = spinner(y, X, AA, lambdaN, lambdaL, W)
+function out = spinnerRun(y, X, AA, lambdaN, lambdaL, W)
 
 % This function solves the problem 
 %--------------------------------------------------------------------------
