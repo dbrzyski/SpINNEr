@@ -1,4 +1,4 @@
-function out = LogisticSpinner(y, X, AA, lambdaN, lambdaL, W)
+function out = LogisticSpinner(y, X, AA, lambdaN, lambdaL, W, Params)
 
 % This function solves the problem 
 %--------------------------------------------------------------------------
@@ -107,40 +107,40 @@ end
 %% Objects
 p             = size(AA, 1);
 n             = length(y);
-if nargin == 5
-    if lambdaL > 0
-        W          = ones(p,p) - eye(p,p);
-    else
-        W          = ones(p,p);
-    end
-end
+% if nargin == 5
+%     if lambdaL > 0
+%         W          = ones(p,p) - eye(p,p);
+%     else
+%         W          = ones(p,p);
+%     end
+% end
 
-%% Solver options
-UseSymmetricityAndZeroDiag = true;
-% UseSymmetricityAndZeroDiag = false;
-solOptions                 =  struct;
-solOptions.deltaInitial1   =  100;   % the initial "step length" for the update with nuclear norm (i.e. delta1)
-solOptions.deltaInitial2   =  100;   % the initial "step length" for the update with LASSO norm (i.e. delta2)
-solOptions.scaleStep       =  1;     % the initial scale for updated deltas; the scale is changed in repetitions based on the convergence rates
-solOptions.ratioStep       =  1;     % the initial ratio between updated deltas; the ratio is changed in repetitions based on the convergence rates
-solOptions.mu              =  10;    % the maximal acceptable ratio between convergence rates to keep deltas without changes in next iteration
-solOptions.deltaInc        =  2;     % delta is multiplied by this parameter when the algorithm decides that it should be increased 
-solOptions.deltaDecr       =  2;     % delta is divided by this parameter when the algorithm decides that it should be decreased 
-solOptions.ratioInc        =  2;     % ratio is multiplied by this parameter when the algorithm decides that it should be increased 
-solOptions.ratioDecr       =  2;     % ratio is divided by this parameter when the algorithm decides that it should be decreased 
-% solOptions.maxIters        =  50000; % the maximal number of iterations; this is a stopping criterion if the algorithm does not converge
-solOptions.maxIters        =  100; % the maximal number of iterations; this is a stopping criterion if the algorithm does not converge
-solOptions.epsPri          =  1e-6;  % convergence tolerance, primar residual
-solOptions.epsDual         =  1e-6;  % convergence tolerance, dual residual
+% %% Solver options
+% UseSymmetricityAndZeroDiag = true;
+% % UseSymmetricityAndZeroDiag = false;
+% solOptions                 =  struct;
+% solOptions.deltaInitial1   =  100;   % the initial "step length" for the update with nuclear norm (i.e. delta1)
+% solOptions.deltaInitial2   =  100;   % the initial "step length" for the update with LASSO norm (i.e. delta2)
+% solOptions.scaleStep       =  1;     % the initial scale for updated deltas; the scale is changed in repetitions based on the convergence rates
+% solOptions.ratioStep       =  1;     % the initial ratio between updated deltas; the ratio is changed in repetitions based on the convergence rates
+% solOptions.mu              =  10;    % the maximal acceptable ratio between convergence rates to keep deltas without changes in next iteration
+% solOptions.deltaInc        =  2;     % delta is multiplied by this parameter when the algorithm decides that it should be increased 
+% solOptions.deltaDecr       =  2;     % delta is divided by this parameter when the algorithm decides that it should be decreased 
+% solOptions.ratioInc        =  2;     % ratio is multiplied by this parameter when the algorithm decides that it should be increased 
+% solOptions.ratioDecr       =  2;     % ratio is divided by this parameter when the algorithm decides that it should be decreased 
+% % solOptions.maxIters        =  50000; % the maximal number of iterations; this is a stopping criterion if the algorithm does not converge
+% solOptions.maxIters        =  100; % the maximal number of iterations; this is a stopping criterion if the algorithm does not converge
+% solOptions.epsPri          =  1e-6;  % convergence tolerance, primar residual
+% solOptions.epsDual         =  1e-6;  % convergence tolerance, dual residual
 
 %% SVD 
 % Convert the [p, p, n] array into a (p^2-p)/2-by-n matrix
 A_mat = reshape(AA, [p^2, n])';
 idxs = logical(reshape(triu(ones(p,p), 1),[p^2,1]));
-if UseSymmetricityAndZeroDiag
+if Params.UseSymmetricityAndZeroDiag
     Avec = 2*A_mat(:,idxs); % n x (p^2-p)/2
 else
-    Avec = A_mat; %#ok<UNRCH> n x p^2
+    Avec = A_mat; % n x p^2
 end
 
 % Economy-size SVD 
@@ -153,7 +153,7 @@ SVDAx.US = US;
 SVDAx.V = V1;
 SVDAx.idxs = idxs;
 SVDAx.pOriginal = p;
-SVDAx.UseSymmetricityAndZeroDiag = UseSymmetricityAndZeroDiag;
+SVDAx.UseSymmetricityAndZeroDiag = Params.UseSymmetricityAndZeroDiag;
 
 %% Cases
 solverType = double([lambdaN, lambdaL]>0);
@@ -164,17 +164,17 @@ switch solverType
     case 1
         out = logistic_minNormEstim(y, X, SVDAx);
     case 2
-        out = logistic_spinnerNuclear(y, X, SVDAx, lambdaN, solOptions);
+        out = logistic_spinnerNuclear(y, X, SVDAx, lambdaN, Params);
     case 3
-        out = logistic_spinnerLasso(y, X, SVDAx, lambdaL, W, solOptions);
+        out = logistic_spinnerLasso(y, X, SVDAx, lambdaL, W, Params);
     case 4
-        out = logistic_spinnerBoth(y, X, SVDAx, lambdaN, lambdaL, W, solOptions);
+        out = logistic_spinnerBoth(y, X, SVDAx, lambdaN, lambdaL, W, Params);
 end
  
 %% Optimial value
 estim      = out.B;
 estimVec   = reshape(estim, [p^2,1]);
-if UseSymmetricityAndZeroDiag
+if Params.UseSymmetricityAndZeroDiag
     estimVec2  = estimVec(idxs);
 else
     estimVec2  = estimVec;

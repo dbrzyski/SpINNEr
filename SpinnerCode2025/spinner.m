@@ -10,9 +10,9 @@ classdef spinner < handle
         n
         p
         d
-        Params
+        % Params
         % ParamsFit
-        usedDefaults
+        % usedDefaults
         % usedDefaultsFit
     end
 
@@ -20,12 +20,16 @@ classdef spinner < handle
         %------------------------------------------------------------------
         % Initialization
         %------------------------------------------------------------------
-        function obj = spinner(y, X, A, varargin)
+        function obj = spinner(y, X, A, W)
             if nargin == 0
                 % show all the list of all possible arguments ( and the corresponding default values)
-                defaultSettings = ParseArguments(varargin);
+                defaultSettings = ParseArgumentsFit({});
                 disp(defaultSettings)
                 return;
+            elseif nargin < 4
+                StandardWeightsMatrix = true; % 'Zeros on diagonal, ones on off-diagonal'
+            else
+                StandardWeightsMatrix = false;
             end
 
             % Assign the required arguments
@@ -37,12 +41,12 @@ classdef spinner < handle
             obj.convertRegressorMatrices(A);
 
             % Collect input arguments
-            [obj.Params, obj.usedDefaults] = ParseArguments(varargin);
+            % [obj.Params, obj.usedDefaults] = ParseArguments(varargin);
 
-            if isequal(obj.Params.Weights, 'Zeros on diagonal, ones on off-diagonal')
+            if StandardWeightsMatrix
                 obj.W = ones(obj.p, obj.p) - eye(obj.p);
             else
-                obj.W = obj.Params.Weights;
+                obj.W = W;
             end
         end
 
@@ -80,11 +84,14 @@ classdef spinner < handle
             % end
             % Collect input arguments
             [ParamsFit, ~] = ParseArgumentsFit(varargin);
-            if isequal(ParamsFit.W, 'Zeros on diagonal, ones on off-diagonal')
-                cW = ones(obj.p, obj.p) - eye(obj.p);
-            else
-                cW = ParamsFit.W;
-            end
+
+            % % extract the information on W and remove it from ParamFit
+            % if isequal(ParamsFit.W, 'Zeros on diagonal, ones on off-diagonal')
+            %     cW = ones(obj.p, obj.p) - eye(obj.p);
+            % else
+            %     cW = ParamsFit.W;
+            % end
+            % ParamsFit = rmfield(ParamsFit, 'W');
 
             %--------------------------------------------------------------
             %                  PROVIDED TUNING PARAMETERS
@@ -96,50 +103,48 @@ classdef spinner < handle
                 else
                     % two parameters provided
                     if isequal(ParamsFit.Family, 'Gaussian')
-                        out = spinnerRun(obj.y, obj.X, obj.AA, ParamsFit.LambdaN, ParamsFit.LambdaL, cW);
+                        out = spinnerRun(obj.y, obj.X, obj.AA, ParamsFit.LambdaN, ParamsFit.LambdaL, obj.W, ParamsFit);
                     elseif isequal(ParamsFit.Family, 'Binomial')
                         assert(all(or(obj.y==0, obj.y == 1)), 'Response vector, y, should have only zeros and ones coefficients if Family == "Binomial"')
-                        out = LogisticSpinner(obj.y, obj.X, obj.AA, ParamsFit.LambdaN, ParamsFit.LambdaL, cW);
+                        out = LogisticSpinner(obj.y, obj.X, obj.AA, ParamsFit.LambdaN, ParamsFit.LambdaL, obj.W, ParamsFit);
                     else
                         error('Not implemented')
                     end
                 end
-            end
+            else
 
             %--------------------------------------------------------------
             %                 NO TUNING PARAMETERS
             %--------------------------------------------------------------
-            assert(isempty(ParamsFit.LambdaL) & isempty(ParamsFit.LambdaN))
-            
-            % no tuning parameters provided
-            if isequal(ParamsFit.Family, 'Gaussian')
-                if isequal(ParamsFit.Method, 'CV')
-                    % SPINNER: Find parameters by Cross-Validation
-                    cParams = {'UseParallel', 'gridLengthN', 'gridLengthL', 'gridParameter', ...
-                        'kfolds', 'displayStatus', 'initLambda', 'zeroSearchRatio', 'maxLambAcc'};
-                    cArgs = obj.getSubstruct(ParamsFit, cParams);
-                    cArgs.W = cW;
-                    out = spinnerCV(obj.y, obj.X, obj.AA, cArgs);
-                else
-                    % SPINNER: Find parameters by Bayesian
-                    error('Not implemented')
-                end
-            elseif isequal(ParamsFit.Family, 'Binomial')
-                assert(all(or(obj.y==0, obj.y == 1)), 'Response vector, y, should have only zeros and ones coefficients if Family == "Binomial"')
-                if isequal(ParamsFit.Method, 'CV')
-                    % LOGISTIC SPINNER: Find parameters by Cross-Validation
-                    cParams = {'UseParallel', 'gridLengthN', 'gridLengthL', 'gridParameter',...
-                        'kfolds', 'displayStatus', 'initLambda', 'zeroSearchRatio', 'maxLambAcc'};
-                    cArgs = obj.getSubstruct(ParamsFit, cParams);
-                    cArgs.W = cW;
-                    out = Logistic_spinnerCV(obj.y, obj.X, obj.AA, cArgs);
-                else
-                    error('Not implemented')
-                end
-            else
-                error('Not implemented')
-            end
 
+                if isequal(ParamsFit.Family, 'Gaussian')
+                    if isequal(ParamsFit.Method, 'CV')
+                        % % SPINNER: Find parameters by Cross-Validation
+                        % cParams = {'UseParallel', 'gridLengthN', 'gridLengthL', 'gridParameter', ...
+                        %     'kfolds', 'displayStatus', 'initLambda', 'zeroSearchRatio', 'maxLambAcc'};
+                        % cArgs = obj.getSubstruct(ParamsFit, cParams);
+                        % cArgs.W = cW;
+                        out = spinnerCV(obj.y, obj.X, obj.AA, obj.W, ParamsFit);
+                    else
+                        % SPINNER: Find parameters by Bayesian
+                        error('Not implemented')
+                    end
+                elseif isequal(ParamsFit.Family, 'Binomial')
+                    assert(all(or(obj.y==0, obj.y == 1)), 'Response vector, y, should have only zeros and ones coefficients if Family == "Binomial"')
+                    if isequal(ParamsFit.Method, 'CV')
+                        % LOGISTIC SPINNER: Find parameters by Cross-Validation
+                        % cParams = {'UseParallel', 'gridLengthN', 'gridLengthL', 'gridParameter',...
+                        %     'kfolds', 'displayStatus', 'initLambda', 'zeroSearchRatio', 'maxLambAcc'};
+                        % cArgs = obj.getSubstruct(ParamsFit, cParams);
+                        % cArgs.W = cW;
+                        out = Logistic_spinnerCV(obj.y, obj.X, obj.AA, obj.W, ParamsFit);
+                    else
+                        error('Not implemented')
+                    end
+                else
+                    error('Not implemented')
+                end
+            end
         end
         
         %------------------------------------------------------------------

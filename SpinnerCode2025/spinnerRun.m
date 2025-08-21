@@ -1,4 +1,4 @@
-function out = spinnerRun(y, X, AA, lambdaN, lambdaL, W)
+function out = spinnerRun(y, X, AA, lambdaN, lambdaL, W, Params)
 
 % This function solves the problem 
 %--------------------------------------------------------------------------
@@ -125,20 +125,20 @@ AAtilde       = H*AAmatrix;
 AAtilde       = reshape(AAtilde', [p, p, n]); % X regressed out
 ytilde        = H*y;                          % X regressed out
 
-%% Solver options
-solOptions                 =  struct;
-solOptions.deltaInitial1   =  100;   % the initial "step length" for the update with nuclear norm (i.e. delta1)
-solOptions.deltaInitial2   =  100;   % the initial "step length" for the update with LASSO norm (i.e. delta2)
-solOptions.scaleStep       =  1;     % the initial scale for updated deltas; the scale is changed in repetitions based on the convergence rates
-solOptions.ratioStep       =  1;     % the initial ratio between updated deltas; the ratio is changed in repetitions based on the convergence rates
-solOptions.mu              =  10;    % the maximal acceptable ratio between convergence rates to keep deltas without changes in next iteration
-solOptions.deltaInc        =  2;     % delta is multiplied by this parameter when the algorithm decides that it should be increased 
-solOptions.deltaDecr       =  2;     % delta is divided by this parameter when the algorithm decides that it should be decreased 
-solOptions.ratioInc        =  2;     % ratio is multiplied by this parameter when the algorithm decides that it should be increased 
-solOptions.ratioDecr       =  2;     % ratio is divided by this parameter when the algorithm decides that it should be decreased 
-solOptions.maxIters        =  50000; % the maximal number of iterations; this is a stopping criterion if the algorithm does not converge
-solOptions.epsPri          =  1e-6;  % convergence tolerance, primar residual
-solOptions.epsDual         =  1e-6;  % convergence tolerance, dual residual
+% %% Solver options
+% solOptions                 =  struct;
+% solOptions.deltaInitial1   =  100;   % the initial "step length" for the update with nuclear norm (i.e. delta1)
+% solOptions.deltaInitial2   =  100;   % the initial "step length" for the update with LASSO norm (i.e. delta2)
+% solOptions.scaleStep       =  1;     % the initial scale for updated deltas; the scale is changed in repetitions based on the convergence rates
+% solOptions.ratioStep       =  1;     % the initial ratio between updated deltas; the ratio is changed in repetitions based on the convergence rates
+% solOptions.mu              =  10;    % the maximal acceptable ratio between convergence rates to keep deltas without changes in next iteration
+% solOptions.deltaInc        =  2;     % delta is multiplied by this parameter when the algorithm decides that it should be increased 
+% solOptions.deltaDecr       =  2;     % delta is divided by this parameter when the algorithm decides that it should be decreased 
+% solOptions.ratioInc        =  2;     % ratio is multiplied by this parameter when the algorithm decides that it should be increased 
+% solOptions.ratioDecr       =  2;     % ratio is divided by this parameter when the algorithm decides that it should be decreased 
+% solOptions.maxIters        =  50000; % the maximal number of iterations; this is a stopping criterion if the algorithm does not converge
+% solOptions.epsPri          =  1e-6;  % convergence tolerance, primar residual
+% solOptions.epsDual         =  1e-6;  % convergence tolerance, dual residual
 
 %% SVD 
 % Convert the [p, p, n] array into a (p^2-p)/2-by-n matrix
@@ -167,11 +167,11 @@ switch solverType
     case 1
         out = minNormEstim(ytilde, SVDAx);
     case 2
-        out = spinnerNuclear(ytilde, SVDAx, lambdaN, solOptions);
+        out = spinnerNuclear(ytilde, SVDAx, lambdaN, Params);
     case 3
-        out = spinnerLasso(ytilde, SVDAx, lambdaL, W, solOptions);
+        out = spinnerLasso(ytilde, SVDAx, lambdaL, W, Params);
     case 4
-        out = spinnerBoth(ytilde, SVDAx, lambdaN, lambdaL, W, solOptions);
+        out = spinnerBoth(ytilde, SVDAx, lambdaN, lambdaL, W, Params);
 end
 
 %% Estimates

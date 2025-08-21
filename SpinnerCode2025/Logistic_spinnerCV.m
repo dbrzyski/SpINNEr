@@ -93,7 +93,7 @@
 %                   tuning parameters (lambda_Ns are in rows)
 %-------------------------------------------
 
-function out = Logistic_spinnerCV(y, X, AA, Params)
+function out = Logistic_spinnerCV(y, X, AA, W, Params)
 %% Tensor of regressor matrices
 [p1, p2, p3] = size(AA);
 if p3==1
@@ -105,7 +105,7 @@ if p3==1
 end
 %% Objects
 n = length(y);
-W = Params.W;
+% W = Params.W;
 
 %% Default parameters
     %     UseParallel: 0
@@ -139,7 +139,7 @@ stopp     = 0;
 
 % finding lambda_L for which matrix of zeros is obtained
 while stopp == 0
-    out = LogisticSpinner(y, X, AA, 0, clambdaL, W);
+    out = LogisticSpinner(y, X, AA, 0, clambdaL, W, Params);
 %    if norm(out.B, 'fro') < 1e-16
     if sqrt(sum(sum(W.*out.B.^2))) < 1e-16
         stopp = 1;
@@ -164,7 +164,7 @@ counterr2  = 1;
 ValsLambLmax = zeros(1,1);
 while stopp == 0
     cLamLmaxNew0  = (lamL1 + lamL2)/2;
-    outNew0       = LogisticSpinner(y, X, AA, 0, cLamLmaxNew0, W);
+    outNew0       = LogisticSpinner(y, X, AA, 0, cLamLmaxNew0, W, Params);
     if norm(outNew0.B, 'fro') < 1e-16
         lamL2 = cLamLmaxNew0;
     else
@@ -185,7 +185,7 @@ stopp     = 0;
 
 % finding lambda_N for which matrix of zeros is obtained
 while stopp == 0
-    out = LogisticSpinner(y, X, AA, clambdaN, 0, W);
+    out = LogisticSpinner(y, X, AA, clambdaN, 0, W, Params);
     if norm(out.B, 'fro') < 1e-16
         stopp = 1;
     end
@@ -209,7 +209,7 @@ counterr2  = 1;
 ValsLambNmax = zeros(1,1);
 while stopp == 0
     cLamLmaxNew0  = (lamN1 + lamN2)/2;
-    outNew0       = LogisticSpinner(y, X, AA, cLamLmaxNew0, 0, W);
+    outNew0       = LogisticSpinner(y, X, AA, cLamLmaxNew0, 0, W, Params);
     if norm(outNew0.B, 'fro') < 1e-16
         lamN2 = cLamLmaxNew0;
     else
@@ -251,7 +251,7 @@ if Params.UseParallel
                 end
                 y_trening       =  y(treningIndices);
                 y_test          =  y(testIndices);
-                out_CV          =  LogisticSpinner(y_trening, X_trening, AA_trening, clambdaN, clambdaL, W);
+                out_CV          =  LogisticSpinner(y_trening, X_trening, AA_trening, clambdaN, clambdaL, W, Params);
                 AA_test_p       =  permute(AA_test, [3 1 2]);
                 eta_test        =  AA_test_p(:,:)*out_CV.B(:) + X_test*out_CV.beta;
                 normResCV(gg)   =  sum(log(1 + exp(eta_test)) - y_test.*eta_test);
@@ -283,7 +283,7 @@ else
                 end
                 y_trening       =  y(treningIndices);
                 y_test          =  y(testIndices);
-                out_CV          =  LogisticSpinner(y_trening, X_trening, AA_trening, clambdaN, clambdaL, W);
+                out_CV          =  LogisticSpinner(y_trening, X_trening, AA_trening, clambdaN, clambdaL, W, Params);
                 AA_test_p       =  permute(AA_test, [3 1 2]);
                 eta_test        =  AA_test_p(:,:)*out_CV.B(:) + X_test*out_CV.beta;
                 normResCV(gg)   =  sum(log(1 + exp(eta_test)) - y_test.*eta_test);
@@ -304,7 +304,7 @@ bestLambdaN = LambsNgrid(Yindex);
 bestLambdaL = LambsLgrid(Xindex);
 
 %% Final estimate
-outFinal    =  LogisticSpinner(y, X, AA, bestLambdaN, bestLambdaL, W);
+outFinal    =  LogisticSpinner(y, X, AA, bestLambdaN, bestLambdaL, W, Params);
 
 %% Output
 out              = struct;
