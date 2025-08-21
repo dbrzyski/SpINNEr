@@ -10,6 +10,7 @@ classdef spinner < handle
         n
         p
         d
+        results
     end
 
     methods
@@ -116,6 +117,7 @@ classdef spinner < handle
                     error('Not implemented')
                 end
             end
+            obj.results = out;
         end
         
         %------------------------------------------------------------------
