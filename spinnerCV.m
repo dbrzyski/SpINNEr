@@ -93,58 +93,17 @@
 %                   tuning parameters (lambda_Ns are in rows)
 %-------------------------------------------
 
-function out = spinnerCV(y, X, AA, varargin)
-%% Tensor of regressor matrices
-[p1, p2, p3] = size(AA);
-if p3==1
-    if mod(p2,p1)~=0
-        error('The assumed form is AA = [A1, A2,...,An], with square matrices Ai, hence number of columns in AA should be the multiplicity of the number of rows')
-    else
-        AA = reshape(AA, [p1, p1, p2/p1]);
-    end
-end
-%% Objects
+function out = spinnerCV(y, X, AA, W, Params)
+
+% Objects
 n = length(y);
 
-%% Additional parameters (AP)
-AP                   = inputParser;
-defaultUseParallel   = false;
-defaultW             = ones(p1, p1) - eye(p1, p1);
-defaultGridLengthN   = 15;
-defaultGridLengthL   = 15;
-defaultKfolds        = 5;
-defaultDisplayStatus = true;
-%------------------------------------
-addRequired(AP, 'y');
-addRequired(AP, 'X');
-addRequired(AP, 'AA');
-addOptional(AP, 'UseParallel', defaultUseParallel, @islogical );
-addOptional(AP, 'W', defaultW, @(x) and(issymmetric(x), all(all(x>=0))));
-addOptional(AP, 'gridLengthN', defaultGridLengthN, @(x) and(x>0, x == round(x)));
-addOptional(AP, 'gridLengthL', defaultGridLengthL, @(x) and(x>0, x == round(x)));
-addOptional(AP, 'kfolds', defaultKfolds, @(x) and(x>0, x == round(x)));
-addOptional(AP, 'displayStatus', defaultDisplayStatus, @islogical );
-%------------------------------------
-parse(AP, y, X, AA, varargin{:})
-%------------------------------------
-UseParallel   = AP.Results.UseParallel;
-displayStatus = AP.Results.displayStatus;
-W             = AP.Results.W;
-gridLengthN   = AP.Results.gridLengthN;
-gridLengthL   = AP.Results.gridLengthL;
-kfolds        = AP.Results.kfolds;
-
-%% CV options
-initLambda       = 1;    % first considered lambdaL
-zeroSearchRatio  = 100;  % decides on the speed of increasing lambdas (for finding the zero estimate)
-maxLambAcc       = 1e-2; % precision for finding regularization parameters which give zero estimate for the first time
-
 %% Cross-validation indices
-minElemsN        = floor(n/kfolds);
-remainingElemsN  = n-minElemsN*kfolds;
-oneToKfols       = 1:kfolds;
+minElemsN        = floor(n/(Params.kfolds));
+remainingElemsN  = n-minElemsN*Params.kfolds;
+oneToKfols       = 1:Params.kfolds;
 GroupsIdxs       = bsxfun(@times,oneToKfols, ones(minElemsN,1));
-GroupsIdxs       = [ GroupsIdxs; [oneToKfols(1:remainingElemsN), zeros(1, kfolds-remainingElemsN)] ]; % if n is not a multiplicity of kfolds
+GroupsIdxs       = [ GroupsIdxs; [oneToKfols(1:remainingElemsN), zeros(1, Params.kfolds-remainingElemsN)] ]; % if n is not a multiplicity of kfolds
 GroupsIdxs       = GroupsIdxs(:);
 GroupsIdxs(GroupsIdxs == 0) = [];
 s                = rng;
@@ -154,25 +113,25 @@ GroupsIdxs       = GroupsIdxs(randSmple);
 rng(s);
 
 %% Finding the maximal lambda L
-clambdaL  = initLambda;
+clambdaL  = Params.initLambda;
 ValsLambL = zeros(1,1);
 counterr1 = 1;
 stopp     = 0;
 
 % finding lambda_L for which matrix of zeros is obtained
 while stopp == 0
-    out = spinner(y, X, AA, 0, clambdaL, W);
+    out = spinnerRun(y, X, AA, 0, clambdaL, W, Params);
 %    if norm(out.B, 'fro') < 1e-16
     if sqrt(sum(sum(W.*out.B.^2))) < 1e-16
         stopp = 1;
     end
     ValsLambL(counterr1) = clambdaL;
-    clambdaL             = zeroSearchRatio*clambdaL;
+    clambdaL             = Params.zeroSearchRatio*clambdaL;
     counterr1            = counterr1 + 1;
 end
 
 % initial interval for maximal lambda L
-if length(ValsLambL) == 1
+if isscalar(ValsLambL)
     lamL1 = 0;
     lamL2 = ValsLambL;
 else
@@ -186,7 +145,7 @@ counterr2  = 1;
 ValsLambLmax = zeros(1,1);
 while stopp == 0
     cLamLmaxNew0  = (lamL1 + lamL2)/2;
-    outNew0       = spinner(y, X, AA, 0, cLamLmaxNew0, W);
+    outNew0       = spinnerRun(y, X, AA, 0, cLamLmaxNew0, W, Params);
     if norm(outNew0.B, 'fro') < 1e-16
         lamL2 = cLamLmaxNew0;
     else
@@ -194,30 +153,30 @@ while stopp == 0
     end
     ValsLambLmax(counterr2) = lamL2;
     counterr2 = counterr2 + 1;
-    if abs(lamL2 - lamL1)/lamL2 < maxLambAcc
+    if abs(lamL2 - lamL1)/lamL2 < Params.maxLambAcc
         stopp = 1;
     end
 end
 
 %% Finding the maximal lambda N
-clambdaN  = initLambda;
+clambdaN  = Params.initLambda;
 ValsLambN = zeros(1,1);
 counterr1 = 1;
 stopp     = 0;
 
 % finding lambda_N for which matrix of zeros is obtained
 while stopp == 0
-    out = spinner(y, X, AA, clambdaN, 0, W);
+    out = spinnerRun(y, X, AA, clambdaN, 0, W, Params);
     if norm(out.B, 'fro') < 1e-16
         stopp = 1;
     end
     ValsLambN(counterr1) = clambdaN;
-    clambdaN             = zeroSearchRatio*clambdaN;
+    clambdaN             = Params.zeroSearchRatio*clambdaN;
     counterr1            = counterr1 + 1;
 end
 
 % initial interval for maximal lambda N
-if length(ValsLambN) == 1
+if isscalar(ValsLambN)
     lamN1 = 0;
     lamN2 = ValsLambN;
 else
@@ -231,7 +190,7 @@ counterr2  = 1;
 ValsLambNmax = zeros(1,1);
 while stopp == 0
     cLamLmaxNew0  = (lamN1 + lamN2)/2;
-    outNew0       = spinner(y, X, AA, cLamLmaxNew0, 0, W);
+    outNew0       = spinnerRun(y, X, AA, cLamLmaxNew0, 0, W, Params);
     if norm(outNew0.B, 'fro') < 1e-16
         lamN2 = cLamLmaxNew0;
     else
@@ -239,26 +198,27 @@ while stopp == 0
     end
     ValsLambNmax(counterr2) = lamN2;
     counterr2 = counterr2 + 1;
-    if abs(lamN2 - lamN1)/lamN2 < maxLambAcc
+    if abs(lamN2 - lamN1)/lamN2 < Params.maxLambAcc
         stopp = 1;
     end
 end
 
 %% Final lambdas grids
-k           = 0.75;
-seqq        = (1:(gridLengthL-1))/(gridLengthL-1);
+k           = Params.gridParameter;
+seqq        = (1:(Params.gridLengthL-1))/(Params.gridLengthL-1);
 LambsLgrid  = [0, exp(  ( seqq * log(lamL2+1)^(1/k) ).^k  ) - 1 ];
 LambsNgrid  = [0, exp(  ( seqq * log(lamN2+1)^(1/k) ).^k  ) - 1 ];
 
 %% Cross - Validation
-logliksCV = zeros(gridLengthN, gridLengthL);
-if UseParallel
-    parfor ii = 1:gridLengthN
+logliksCV = zeros(Params.gridLengthN, Params.gridLengthL);
+if Params.UseParallel
+    parfor ii = 1:Params.gridLengthN
     clambdaN = LambsNgrid(ii);
-        for jj = 1:gridLengthL
+    logliksCVrow = zeros(1, Params.gridLengthL);
+        for jj = 1:Params.gridLengthL
             clambdaL  = LambsLgrid(jj);
-            normResCV = zeros(kfolds,1);
-            for gg = 1:kfolds
+            normResCV = zeros(Params.kfolds,1);
+            for gg = 1:Params.kfolds
                 testIndices     =  find(GroupsIdxs == gg);
                 treningIndices  =  setdiff(1:n , testIndices)';
                 AA_trening      =  AA(:,:, treningIndices); %#ok<*PFBNS>
@@ -272,23 +232,24 @@ if UseParallel
                 end
                 y_trening       =  y(treningIndices);
                 y_test          =  y(testIndices);
-                out_CV          =  spinner(y_trening, X_trening, AA_trening, clambdaN, clambdaL, W);
+                out_CV          =  spinnerRun(y_trening, X_trening, AA_trening, clambdaN, clambdaL, W, Params);
                 AA_test_p       =  permute(AA_test, [3 1 2]);
                 normResCV(gg)   =  0.5*norm(y_test - AA_test_p(:,:)*out_CV.B(:) - X_test*out_CV.beta)^2;
-            end        
-            logliksCV(ii, jj) =  sum(normResCV)/n;
-            if displayStatus
+            end
+            logliksCVrow(jj) =  sum(normResCV)/n;
+            if Params.displayStatus
                 disp(strcat(['finished:  ', num2str(ii), endText(ii),' ', 'value from lambdaN grid,  ', num2str(jj), endText(jj), ' value from lambdaL grid']))
             end
         end
+        logliksCV(ii, :) = logliksCVrow;
     end
 else
-    for ii = 1:gridLengthN
+    for ii = 1:Params.gridLengthN
         clambdaN = LambsNgrid(ii);
-        for jj = 1:gridLengthL
+        for jj = 1:Params.gridLengthL
             clambdaL  = LambsLgrid(jj);
-            normResCV = zeros(kfolds,1);
-            for gg = 1:kfolds
+            normResCV = zeros(Params.kfolds,1);
+            for gg = 1:Params.kfolds
                 testIndices     =  find(GroupsIdxs == gg);
                 treningIndices  =  setdiff(1:n , testIndices)';
                 AA_trening      =  AA(:,:, treningIndices); %#ok<*PFBNS>
@@ -302,12 +263,12 @@ else
                 end
                 y_trening       =  y(treningIndices);
                 y_test          =  y(testIndices);
-                out_CV          =  spinner(y_trening, X_trening, AA_trening, clambdaN, clambdaL, W);
+                out_CV          =  spinnerRun(y_trening, X_trening, AA_trening, clambdaN, clambdaL, W, Params);
                 AA_test_p       =  permute(AA_test, [3 1 2]);
                 normResCV(gg)   =  0.5*norm(y_test - AA_test_p(:,:)*out_CV.B(:) - X_test*out_CV.beta)^2;
             end        
             logliksCV(ii, jj) =  sum(normResCV)/n;
-            if displayStatus
+            if Params.displayStatus
                 disp(strcat(['finished:  ', num2str(ii), endText(ii),' ', 'value from lambdaN grid,  ', num2str(jj), endText(jj), ' value from lambdaL grid']))
             end
         end
@@ -322,7 +283,7 @@ bestLambdaN = LambsNgrid(Yindex);
 bestLambdaL = LambsLgrid(Xindex);
 
 %% Final estimate
-outFinal    =  spinner(y, X, AA, bestLambdaN, bestLambdaL, W);
+outFinal    =  spinnerRun(y, X, AA, bestLambdaN, bestLambdaL, W, Params);
 
 %% Output
 out              = struct;
