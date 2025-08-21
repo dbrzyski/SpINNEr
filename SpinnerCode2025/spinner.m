@@ -10,10 +10,6 @@ classdef spinner < handle
         n
         p
         d
-        % Params
-        % ParamsFit
-        % usedDefaults
-        % usedDefaultsFit
     end
 
     methods
@@ -39,9 +35,6 @@ classdef spinner < handle
 
             % Tensor of regressor matrices
             obj.convertRegressorMatrices(A);
-
-            % Collect input arguments
-            % [obj.Params, obj.usedDefaults] = ParseArguments(varargin);
 
             if StandardWeightsMatrix
                 obj.W = ones(obj.p, obj.p) - eye(obj.p);
@@ -76,22 +69,8 @@ classdef spinner < handle
 
         %------------------------------------------------------------------
         function out = fit(obj, varargin)
-            % if nargin == 1
-            %     % show all the list of all possible arguments ( and the corresponding default values)
-            %     defaultSettings = ParseArgumentsFit(varargin);
-            %     disp(defaultSettings)
-            %     return;
-            % end
             % Collect input arguments
             [ParamsFit, ~] = ParseArgumentsFit(varargin);
-
-            % % extract the information on W and remove it from ParamFit
-            % if isequal(ParamsFit.W, 'Zeros on diagonal, ones on off-diagonal')
-            %     cW = ones(obj.p, obj.p) - eye(obj.p);
-            % else
-            %     cW = ParamsFit.W;
-            % end
-            % ParamsFit = rmfield(ParamsFit, 'W');
 
             %--------------------------------------------------------------
             %                  PROVIDED TUNING PARAMETERS
@@ -119,11 +98,7 @@ classdef spinner < handle
 
                 if isequal(ParamsFit.Family, 'Gaussian')
                     if isequal(ParamsFit.Method, 'CV')
-                        % % SPINNER: Find parameters by Cross-Validation
-                        % cParams = {'UseParallel', 'gridLengthN', 'gridLengthL', 'gridParameter', ...
-                        %     'kfolds', 'displayStatus', 'initLambda', 'zeroSearchRatio', 'maxLambAcc'};
-                        % cArgs = obj.getSubstruct(ParamsFit, cParams);
-                        % cArgs.W = cW;
+                        % SPINNER: Find parameters by Cross-Validation
                         out = spinnerCV(obj.y, obj.X, obj.AA, obj.W, ParamsFit);
                     else
                         % SPINNER: Find parameters by Bayesian
@@ -133,10 +108,6 @@ classdef spinner < handle
                     assert(all(or(obj.y==0, obj.y == 1)), 'Response vector, y, should have only zeros and ones coefficients if Family == "Binomial"')
                     if isequal(ParamsFit.Method, 'CV')
                         % LOGISTIC SPINNER: Find parameters by Cross-Validation
-                        % cParams = {'UseParallel', 'gridLengthN', 'gridLengthL', 'gridParameter',...
-                        %     'kfolds', 'displayStatus', 'initLambda', 'zeroSearchRatio', 'maxLambAcc'};
-                        % cArgs = obj.getSubstruct(ParamsFit, cParams);
-                        % cArgs.W = cW;
                         out = Logistic_spinnerCV(obj.y, obj.X, obj.AA, obj.W, ParamsFit);
                     else
                         error('Not implemented')
@@ -149,7 +120,6 @@ classdef spinner < handle
         
         %------------------------------------------------------------------
         function updateWeights(obj, W)
-            % obj.OptionalArgs.W = W;
             obj.W = W;
         end
 

@@ -105,17 +105,6 @@ if p3==1
 end
 %% Objects
 n = length(y);
-% W = Params.W;
-
-%% Default parameters
-    %     UseParallel: 0
-    %     gridLengthN: 15
-    %     gridLengthL: 15
-    %          kfolds: 5
-    %   displayStatus: 1
-    %      initLambda: 1
-    % zeroSearchRatio: 100
-    %      maxLambAcc: 0.0100
 
 %% Cross-validation indices
 minElemsN        = floor(n/(Params.kfolds));

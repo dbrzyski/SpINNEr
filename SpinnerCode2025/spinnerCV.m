@@ -97,17 +97,6 @@ function out = spinnerCV(y, X, AA, W, Params)
 
 % Objects
 n = length(y);
-% W = Params.W;
-
-%% Params
-    %     UseParallel: 0
-    %     gridLengthN: 15
-    %     gridLengthL: 15
-    %          kfolds: 5
-    %   displayStatus: 1
-    %      initLambda: 1
-    % zeroSearchRatio: 100
-    %      maxLambAcc: 0.0100
 
 %% Cross-validation indices
 minElemsN        = floor(n/(Params.kfolds));
@@ -248,7 +237,6 @@ if Params.UseParallel
                 normResCV(gg)   =  0.5*norm(y_test - AA_test_p(:,:)*out_CV.B(:) - X_test*out_CV.beta)^2;
             end
             logliksCVrow(jj) =  sum(normResCV)/n;
-            % logliksCV(ii, jj) =  sum(normResCV)/n;
             if Params.displayStatus
                 disp(strcat(['finished:  ', num2str(ii), endText(ii),' ', 'value from lambdaN grid,  ', num2str(jj), endText(jj), ' value from lambdaL grid']))
             end

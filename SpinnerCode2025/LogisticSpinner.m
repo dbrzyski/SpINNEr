@@ -107,31 +107,6 @@ end
 %% Objects
 p             = size(AA, 1);
 n             = length(y);
-% if nargin == 5
-%     if lambdaL > 0
-%         W          = ones(p,p) - eye(p,p);
-%     else
-%         W          = ones(p,p);
-%     end
-% end
-
-% %% Solver options
-% UseSymmetricityAndZeroDiag = true;
-% % UseSymmetricityAndZeroDiag = false;
-% solOptions                 =  struct;
-% solOptions.deltaInitial1   =  100;   % the initial "step length" for the update with nuclear norm (i.e. delta1)
-% solOptions.deltaInitial2   =  100;   % the initial "step length" for the update with LASSO norm (i.e. delta2)
-% solOptions.scaleStep       =  1;     % the initial scale for updated deltas; the scale is changed in repetitions based on the convergence rates
-% solOptions.ratioStep       =  1;     % the initial ratio between updated deltas; the ratio is changed in repetitions based on the convergence rates
-% solOptions.mu              =  10;    % the maximal acceptable ratio between convergence rates to keep deltas without changes in next iteration
-% solOptions.deltaInc        =  2;     % delta is multiplied by this parameter when the algorithm decides that it should be increased 
-% solOptions.deltaDecr       =  2;     % delta is divided by this parameter when the algorithm decides that it should be decreased 
-% solOptions.ratioInc        =  2;     % ratio is multiplied by this parameter when the algorithm decides that it should be increased 
-% solOptions.ratioDecr       =  2;     % ratio is divided by this parameter when the algorithm decides that it should be decreased 
-% % solOptions.maxIters        =  50000; % the maximal number of iterations; this is a stopping criterion if the algorithm does not converge
-% solOptions.maxIters        =  100; % the maximal number of iterations; this is a stopping criterion if the algorithm does not converge
-% solOptions.epsPri          =  1e-6;  % convergence tolerance, primar residual
-% solOptions.epsDual         =  1e-6;  % convergence tolerance, dual residual
 
 %% SVD 
 % Convert the [p, p, n] array into a (p^2-p)/2-by-n matrix
