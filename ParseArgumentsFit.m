@@ -22,8 +22,8 @@ defaultDisplayStatus = true;
 
 %% Optional parameters
 % addParameter(p, 'W', defaultW, @(x) and(issymmetric(x), all(all(x>=0))));
-addParameter(p, 'LambdaN', [], @(x) or(isempty(x), x>=0));
-addParameter(p, 'LambdaL', [], @(x) or(isempty(x), x>=0));
+addParameter(p, 'LambdaN', [], @(x)isempty(x)||(isnumeric(x)&&isscalar(x)&&x>=0));
+addParameter(p, 'LambdaL', [], @(x)isempty(x)||(isnumeric(x)&&isscalar(x)&&x>=0));
 addParameter(p, 'Family', 'Gaussian', @(x) ismember(x,{'Gaussian','Binomial'}));
 addParameter(p, 'Method', 'CV', @(x) ismember(x,{'CV','Bayesian'}));
 

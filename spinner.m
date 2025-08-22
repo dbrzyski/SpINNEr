@@ -10,7 +10,10 @@ classdef spinner < handle
         n
         p
         d
-        results
+        
+        % available
+        Estimate
+        History = {}
     end
 
     methods
@@ -117,9 +120,35 @@ classdef spinner < handle
                     error('Not implemented')
                 end
             end
-            obj.results = out;
+            obj.Estimate = out;
+            obj.History = cat(1, obj.History, out);
         end
-        
+
+        %------------------------------------------------------------------
+        function plotEstimate(obj, histCounter)
+            if nargin == 1
+                histCounter = length(obj.History);
+            end
+
+            % get estimate and create its heatmap
+            b = obj.History{histCounter}.B;
+            b = double(b);      
+            bottom  = min(min(b));  % fixed option for now
+            top = max(max(b));  % fixed option for now
+            tit =''; % fixed option for now
+            margins = [0.05, 0.05];
+            figure('name','Estimates');
+            axes('Position', [margins(2), margins(1), (1-2*margins(2)), (1-2*margins(1))]);
+            imagesc(b);
+            colormap(spinnerColormap(bottom ,top));
+            title(tit);
+            axis equal;
+            axis tight;
+            clim manual
+            clim([bottom  top]);
+            colorbar
+        end
+
         %------------------------------------------------------------------
         function updateWeights(obj, W)
             obj.W = W;
