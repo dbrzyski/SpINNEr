@@ -10,6 +10,7 @@ classdef spinner < handle
         n
         p
         d
+        modelFitted = false
         
         % available
         Estimate
@@ -122,12 +123,59 @@ classdef spinner < handle
             end
             obj.Estimate = out;
             obj.History = cat(1, obj.History, out);
+            obj.modelFitted = true;
         end
+
+        %------------------------------------------------------------------
+        function identifyClusters(obj, clustNum)
+            if ~obj.modelFitted
+                error('To plot the estimate, the model must be fitted first by using "fit" method.')
+            end
+            % k = 5
+            [V, ~] = eigs(obj.Estimate.B, clustNum+1);  
+            clusterLabels = kmeans(V, clustNum+1);
+
+        end
+
+
+        function [recoveredMatrix, permutation] = identifyClusters2(obj, threshold)
+            % Recover block-diagonal structure from a symmetric matrix A
+            % threshold: tolerance for small off-block entries (default = 0.1)
+        
+            if nargin < 2
+                threshold = 0.1;
+            end
+            % ----------------------------------------------------------
+            %                   POSITIVE ENTRIES
+            % ----------------------------------------------------------
+            
+            % Compute similarity and distance matrices
+            cB = obj.Estimate.B(obj.Estimate.B>0);
+            similarity = abs(cB);
+            similarity(similarity>1) = 1;
+            distance = 1 - similarity;
+            distance = distance - diag(diag(distance));
+        
+            % Hierarchical clustering
+            Y = squareform(distance); % Convert to condensed form
+            Z = linkage(Y, 'average');
+            clusters = cluster(Z, 'cutoff', threshold, 'criterion', 'distance');
+        
+            % Optimal permutation
+            [~, permutation] = sort(clusters);
+            recoveredMatrix = cB(permutation, permutation);
+            spinnerHeatmap(recoveredMatrix)
+        end
+
 
         %------------------------------------------------------------------
         function plotEstimate(obj, histCounter)
             if nargin == 1
                 histCounter = length(obj.History);
+            end
+
+            if ~obj.modelFitted
+                error('To plot the estimate, the model must be fitted first by using "fit" method.')
             end
 
             % get estimate and create its heatmap
