@@ -134,6 +134,10 @@ classdef spinner < handle
             % k = 5
             [V, ~] = eigs(obj.Estimate.B, clustNum+1);  
             clusterLabels = kmeans(V, clustNum+1);
+            
+            %Louvain community detection algorithm
+            % https://github.com/GenLouvain/GenLouvain
+            % https://sites.google.com/site/bctnet/network-visualization
 
         end
 
@@ -149,17 +153,27 @@ classdef spinner < handle
             %                   POSITIVE ENTRIES
             % ----------------------------------------------------------
             
-            % Compute similarity and distance matrices
-            cB = obj.Estimate.B(obj.Estimate.B>0);
+            % Compute similarity matrix
+            cB = obj.Estimate.B; 
+            cB(obj.Estimate.B<0) = 0;
             similarity = abs(cB);
+
+            % Scale similarity matrix and generate distance matrix
+            similarity = similarity - min(min(similarity));
             similarity(similarity>1) = 1;
+            similarity = similarity/max(max(similarity));
             distance = 1 - similarity;
             distance = distance - diag(diag(distance));
         
             % Hierarchical clustering
             Y = squareform(distance); % Convert to condensed form
-            Z = linkage(Y, 'average');
-            clusters = cluster(Z, 'cutoff', threshold, 'criterion', 'distance');
+            % Z = linkage(Y, 'average');
+            % clusters = cluster(Z, 'cutoff', threshold, 'criterion', 'distance');
+
+            Z = linkage(Y, 'complete');  % favors tight clusters
+            expected_num_blocks = 14;
+            clusters = cluster(Z, 'maxclust', expected_num_blocks);  % if you have an estimate
+
         
             % Optimal permutation
             [~, permutation] = sort(clusters);
